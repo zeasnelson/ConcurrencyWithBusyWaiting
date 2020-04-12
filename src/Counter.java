@@ -54,7 +54,16 @@ public class Counter extends Thread {
         if( passenger == null )
             return false;
 
-        if( clerkOne.hasSpotAvailable() ){
+        //try adding the passenger to the clerk with less people in line
+        //to ensure FCFS
+        if( clerkOne.hasSpotAvailable() && clerkTwo.hasSpotAvailable() ){
+            if( clerkOne.getLineLength() < clerkTwo.getLineLength() ){
+                return clerkOne.addPassToLine(passenger);
+            }
+            return clerkTwo.addPassToLine(passenger);
+        }
+        //one clerk has a full line
+        else if( clerkOne.hasSpotAvailable() ){
             return clerkOne.addPassToLine(passenger);
         }
         else if( clerkTwo.hasSpotAvailable() ){
@@ -82,15 +91,19 @@ public class Counter extends Thread {
      * and assign it to the next available clerk
      */
     public void callPassengersFromStandBy(){
-        Boolean isInLine;
-        Passenger passenger = standBy.getNextPassenger();
-        while( passenger != null ){
-            //If both clerks are full - it will return false
-            isInLine = assignPassToClerk(passenger);
+        Boolean isInLine = true;
+        Passenger passenger = null;
+
+        //loop until all passengers in stand-b area lining in the clerk lines
+        while( !standBy.isEmpty() || passenger != null){
             //if passenger was added to clerk, remove passenger from stand-by
-            if( isInLine ){
+            if( isInLine || passenger == null ){
+                //get the next passenger with the earliest arrival time to ensure FCFS
                 passenger = standBy.getNextPassenger();
             }
+            //If both clerks are full - it will return false
+            isInLine = assignPassToClerk(passenger);
+
         }
     }
 

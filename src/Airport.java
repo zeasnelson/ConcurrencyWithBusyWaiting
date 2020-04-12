@@ -8,7 +8,7 @@ public class Airport extends Thread{
     /**
      * A custom ArrayList of type passengers
      */
-    private PassengerList passengers;
+    private volatile PassengerList passengers;
 
     /**
      * Instance of Counter thread
@@ -38,19 +38,26 @@ public class Airport extends Thread{
         }
     }
 
+    /**
+     * Calculate the depart time based on the  number of passengers
+     * @param numOfPassengers the number of passengers in the simulation
+     * @return the plane depart time
+     */
     public int getDepartTime(int numOfPassengers){
         if( numOfPassengers <= 10)
             return 6000;
         else if( numOfPassengers <= 20)
             return 12000;
         else
-            return 22000;
+            return 20000;
     }
 
     @Override
     public void run(){
         //Store the start time for the entire simulation
         Clock.setStartTime();
+
+        System.out.println("[milliseconds]");
 
         //create the passenger threads
         createPassengers();
@@ -68,7 +75,7 @@ public class Airport extends Thread{
         while ( Clock.getTime() < departTime );
 
         //give the flight attendant a reference to all passengers
-        flightAttendant.setPassengers(passengers);
+        flightAttendant.setPassengersList(passengers);
 
         //start the FlightAttendant thread
         flightAttendant.start();
@@ -81,8 +88,9 @@ public class Airport extends Thread{
 
 
     public static void main(String[] args) {
-        int numOfPassengers = 10;
+        int numOfPassengers = 18;
         (new Airport(numOfPassengers)).start();
+
     }
 
 }

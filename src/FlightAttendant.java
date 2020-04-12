@@ -9,7 +9,7 @@ public class FlightAttendant extends Thread {
     /**
      * To store a reference to all the passengers waiting to fly
      */
-    private PassengerList passengers;
+    private PassengerList passengersList;
 
     /**
      * The length of the line to board the plane
@@ -29,8 +29,8 @@ public class FlightAttendant extends Thread {
     }
 
 
-    public void setPassengers(PassengerList passengers){
-        this.passengers = passengers;
+    public void setPassengersList(PassengerList passengersList){
+        this.passengersList = passengersList;
     }
 
     /**
@@ -54,29 +54,48 @@ public class FlightAttendant extends Thread {
      * @param zoneNum the zone number being called
      */
     public void callZone(int zoneNum){
-        long startTime = Clock.getTime();
-        long timer = 0;
+        //start the timer for 6 secs
+        //this is the time the FlightAttendant will wait per zone
+        Clock.setTimerStart(6000);
 
         //BW until all passengers with @zoneNum arrive
-        //Flight attendant will spend 10 minutes per zone
         int i = 0;
         Passenger passenger;
-        while( Clock.millisToSecs(timer) < 5 ){
-            passenger = passengers.get(i);
+        while( Clock.timerIsRunning() ){
+            passenger = passengersList.get(i);
+
+            //make sure passenger is at the gate already
             if( passenger.isAtWaitAtGate()  ){
+
+                //make sure passenger is in zone number specified and hasn't already been called
                 if( passenger.getZoneNum() == zoneNum && !passenger.isAtBoardingLine() ) {
-                    line.add(passenger);
+                    passenger.setIsAtBoardingLine(true);
+                    //let the passenger move on to the boarding line
                     passenger.setWaitAtGate(false);
+                    //add passenger to the waiting line
+                    line.add(passenger);
                 }
             }
-            i = ((++i)%passengers.size());
-            timer = Clock.getTime() - startTime;
+            i = ((++i)% passengersList.size());
         }
 
+//        goToSleep(4000);
         //once all passengers are waiting at the boarding line
+        scanBoardingPasses(zoneNum);
+
+    }
+
+    public void scanBoardingPasses(int zoneNum){
+        msg("scanning boarding passes for " + line.size() + " passengers in zone " + zoneNum);
+        //sort according to arrival time, ensure FCFS
+        line.sortByArrivalTime();
+
         //scan their boarding passes
         for( Passenger pass : line ){
             pass.setBoardingPassScanned(true);
+            pass.yield();
+            pass.yield();
+            msg(pass.getName() + "'s boarding pass with arrival time " + pass.getArrivalTime() + " scanned");
         }
 
         //clear the line for the next zone group
@@ -89,10 +108,10 @@ public class FlightAttendant extends Thread {
      */
     public void rebookFlights(){
         //if this list has passengers, then those passengers missed the flight
-        if(passengers.size() > 0) {
+        if(passengersList.size() > 0) {
 
             //stop the threads of all passengers who missed the flight
-            for (Passenger pass : passengers) {
+            for (Passenger pass : passengersList) {
                 if( !pass.isAtBoardingLine() ) {
                     msg("Passenger " + pass.getName() + " missed the flight");
                     pass.stopThread(true);
@@ -107,9 +126,9 @@ public class FlightAttendant extends Thread {
      * Use isAlive() and join() to send all passengers home
      */
     public void sendPassengersHome(){
-        passengers.sort(Passenger::compareTo);
+        passengersList.sortBySeatNumber();
 
-        for (Passenger passenger : passengers) {
+        for (Passenger passenger : passengersList) {
             if (passenger.isAlive()) {
                 try {
                     passenger.setGoHome(true);
@@ -119,15 +138,17 @@ public class FlightAttendant extends Thread {
                 }
             }
         }
+        msg(passengersList.size() + " passengers arrived home");
     }
 
     /**
      * Call the interrupt() method on all sleeping passengers
      */
     public void interruptAllPassengers(){
-        for( Passenger pass : passengers ){
+        for( Passenger pass : passengersList){
             if( pass.isAlive() ) {
                 pass.interrupt();
+                goToSleep(100);
             }
         }
     }
@@ -147,7 +168,7 @@ public class FlightAttendant extends Thread {
         callZone(3);
 
         long totalTime = Clock.getTime() - boardingStartTime;
-        msg("All groups have boarded plane in " + Clock.millisToSecs(totalTime) + " minutes");
+        msg("All groups have boarded plane in " + totalTime + " ms");
         msg("Plane doors are closed");
 
         //check which passenger missed the flight and have them rebook flights
@@ -161,16 +182,17 @@ public class FlightAttendant extends Thread {
         msg("Mid-flight meal. We'll arrive in 1 hour");
         goToSleep(4000);
         msg("We'll arrive in 10 minutes. Fasten seat belts");
-        goToSleep(100);
+        goToSleep(1000);
 
         //the original list contains all passengers including those who missed the flight
         // remove those that missed the flight
-        passengers.removeStoppedThreads();
+        passengersList.removeStoppedThreads();
+
+        msg("Plane is about to land");
 
         //wake up passengers for landing
         interruptAllPassengers();
 
-        msg("Plane is about to land");
         goToSleep(1000);
         msg("Plane landed. Seat belt light turned off");
         msg("Leave plane in ascending order according to seat number");

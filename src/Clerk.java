@@ -125,6 +125,11 @@ public class Clerk extends Thread {
     }
 
 
+    public int getLineLength(){
+        return lineQueue.size();
+    }
+
+
     public void msg(String msg){
         System.out.println("["+Clock.getTime()+"] " + getName() + ": " + msg);
     }
@@ -138,6 +143,8 @@ public class Clerk extends Thread {
 
             //help next passenger in line
             Passenger passenger = lineQueue.getNextPassenger();
+            if( passenger == null )
+                return;
 
             //passenger moves to clerk line
             passenger.setStandBy(false);

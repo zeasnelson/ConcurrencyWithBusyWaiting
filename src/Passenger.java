@@ -1,4 +1,6 @@
-public class Passenger extends Thread implements Comparable<Passenger>{
+import java.util.Random;
+
+public class Passenger extends Thread{
 
     /**
      * Store the seat number
@@ -44,11 +46,12 @@ public class Passenger extends Thread implements Comparable<Passenger>{
      * To save the arrival time to airport.
      * Later used to save arrival time to boarding gate
      */
-    private long arrivalTime;
+    private volatile long arrivalTime;
 
 
     public Passenger(String passengerID){
         super(passengerID);
+        this.arrivalTime = -1;
         this.seatNum = -1;
         this.zoneNum = -1;
         this.standBy = true;
@@ -63,6 +66,10 @@ public class Passenger extends Thread implements Comparable<Passenger>{
 
     public boolean isAtBoardingLine() {
         return isAtBoardingLine;
+    }
+
+    public void setIsAtBoardingLine(Boolean isAtBoardingLine){
+        this.isAtBoardingLine = isAtBoardingLine;
     }
 
     public void setSeatNum(int seatNum) {
@@ -103,7 +110,6 @@ public class Passenger extends Thread implements Comparable<Passenger>{
     public void setBoardingPassScanned(boolean flag) {
         this.boardingPassScanned = flag;
     }
-
     /**
      * Put the thread to sleep
      * @param milli time to sleep in millis
@@ -128,16 +134,20 @@ public class Passenger extends Thread implements Comparable<Passenger>{
         this.stop = stop;
     }
 
-    @Override
-    public int compareTo(Passenger otherPass) {
+    public int compareSeatNumber(Passenger otherPass) {
         return seatNum - otherPass.getSeatNum();
+    }
+
+    public int compareArrivalTime(Passenger OtherPassenger){
+        return (int) (arrivalTime - OtherPassenger.getArrivalTime());
     }
 
     @Override
     public void run() {
 
         //get a random number between 0 and 1 sec for arrival time
-        int randomTime = (int) (Math.random()*5000);
+        Random rand = new Random();
+        int randomTime = rand.nextInt(3000);
         goToSleep(randomTime);
 
         //passenger arrives, save the arrival time
@@ -155,35 +165,32 @@ public class Passenger extends Thread implements Comparable<Passenger>{
         msg("is going through security line ");
         int defaultPriority = getPriority();
         setPriority(1);
-        randomTime = (int) (Math.random()*8000);
+
+        //passenger will take between 5 to 10 seconds to go pass security
+        randomTime = rand.nextInt(5000)+5000;
         goToSleep(randomTime);
         setPriority(defaultPriority);
 
-        waitAtGate = true;
         msg("arrived to gate. Waiting for flight attendant to call");
         //BW until flight attendant calls. Once flight attendant calls this passenger, will stop BW
+        waitAtGate = true;
         while (waitAtGate);
 
         //continues only if this passenger did not miss the flight
         if( !stop ) {
 
-            isAtBoardingLine = true;
-
             msg("Walking to the boarding door. Seat: " + seatNum + " Zone: " + zoneNum);
-            //will take up to 1 seconds to walk to boarding line
-            randomTime = (int) (Math.random() * 1000);
+            //will take between 1 and 2 seconds to make to the line
+            randomTime = rand.nextInt(1000)+1000;
             goToSleep(randomTime);
 
-            msg("Waiting at boarding line to scan boarding pass");
+            msg("Waiting at boarding line to scan boarding pass.");
             //set arrival time to the boarding line
             arrivalTime = Clock.getTime();
 
+
             //BW until boarding pass is scanned by flight attendant
             while (!boardingPassScanned) ;
-            msg("is scanning boarding pass");
-            yield();
-            yield();
-            msg("has boarded the plane and is sitting - going to sleep");
 
             //sleep during flight
             goToSleep(90000);
