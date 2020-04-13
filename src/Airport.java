@@ -8,7 +8,7 @@ public class Airport extends Thread{
     /**
      * A custom ArrayList of type passengers
      */
-    private volatile PassengerList passengers;
+    private volatile PassengersList passengers;
 
     /**
      * Instance of Counter thread
@@ -26,7 +26,7 @@ public class Airport extends Thread{
         super("Airport");
         this.numOfPassengers = numOfPassengers;
         this.flightAttendant = new FlightAttendant();
-        this.passengers      = new PassengerList(numOfPassengers);
+        this.passengers      = new PassengersList(numOfPassengers);
         this.counter         = new Counter(numOfPassengers);
     }
 

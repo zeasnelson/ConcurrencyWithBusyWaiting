@@ -11,7 +11,7 @@ public class Clerk extends Thread {
     /**
      * Custom ArrayList
      */
-    private volatile PassengerList lineQueue;
+    private volatile PassengersList lineQueue;
 
     /**
      * The length of the line for the clerk
@@ -31,7 +31,7 @@ public class Clerk extends Thread {
     public Clerk(int lineLength, String name){
         setName(name);
         this.lineLength = lineLength;
-        this.lineQueue = new PassengerList(lineLength);
+        this.lineQueue = new PassengersList(lineLength);
         this.goHome = false;
     }
 

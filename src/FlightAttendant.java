@@ -4,12 +4,12 @@ public class FlightAttendant extends Thread {
     /**
      * An ArrayList for passengers to wait when called by the attendant
      */
-    private PassengerList line;
+    private PassengersList line;
 
     /**
      * To store a reference to all the passengers waiting to fly
      */
-    private PassengerList passengersList;
+    private PassengersList passengersList;
 
     /**
      * The length of the line to board the plane
@@ -20,7 +20,7 @@ public class FlightAttendant extends Thread {
     public FlightAttendant(){
         super("FlightAttendant");
         this.lineLength = 10;
-        this.line = new PassengerList(lineLength);
+        this.line = new PassengersList(lineLength);
     }
 
 
@@ -29,7 +29,7 @@ public class FlightAttendant extends Thread {
     }
 
 
-    public void setPassengersList(PassengerList passengersList){
+    public void setPassengersList(PassengersList passengersList){
         this.passengersList = passengersList;
     }
 

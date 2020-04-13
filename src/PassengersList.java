@@ -1,12 +1,12 @@
 import java.util.ArrayList;
 
-public class PassengerList extends ArrayList<Passenger> {
+public class PassengersList extends ArrayList<Passenger> {
 
-    public PassengerList(PassengerList passengers){
+    public PassengersList(PassengersList passengers){
         super(passengers);
     }
 
-    public PassengerList(int size){
+    public PassengersList(int size){
         super(size);
     }
 

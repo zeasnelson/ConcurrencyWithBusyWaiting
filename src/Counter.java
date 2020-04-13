@@ -30,7 +30,7 @@ public class Counter extends Thread {
     /**
      * passengers will wait here if both clerk lines are full
      */
-    private PassengerList standBy;
+    private PassengersList standBy;
 
     public Counter(int numberOfPassengers){
         super("Counter");
@@ -40,7 +40,7 @@ public class Counter extends Thread {
         //class variables
         this.counterNum    = 3;
         this.numberOfPassengers = numberOfPassengers;
-        this.standBy  = new PassengerList(numberOfPassengers);
+        this.standBy  = new PassengersList(numberOfPassengers);
         this.clerkOne = new Clerk(counterNum, "ClerkOne");
         this.clerkTwo = new Clerk(counterNum, "ClerkTwo");
     }
@@ -77,9 +77,9 @@ public class Counter extends Thread {
      * Receives an ArrayList of Passengers
      * @param passengers the ArrayList of passengers
      */
-    public void setStandByPassengers(PassengerList passengers){
+    public void setStandByPassengers(PassengersList passengers){
         //make a copy to maintain a list with all the passengers for other threads to use later
-        this.standBy = new PassengerList(passengers);
+        this.standBy = new PassengersList(passengers);
         for( Passenger pass: standBy){
             pass.start();
         }
