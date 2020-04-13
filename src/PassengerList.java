@@ -1,7 +1,4 @@
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 
 public class PassengerList extends ArrayList<Passenger> {
 
@@ -15,7 +12,9 @@ public class PassengerList extends ArrayList<Passenger> {
 
     /**
      * Finds the passenger with the earliest arrival time. This insures FCFS
-     * @return the passenger with the earliest arrival time
+     * Passengers with arrivalTime == -1, are not checked.
+     * This passengers have not arrived to the airport yet
+     * @return the passenger with the earliest arrival time or null if no one arrived yet
      */
     public Passenger getNextPassenger(){
         if( isEmpty() ){

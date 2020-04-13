@@ -79,7 +79,7 @@ public class FlightAttendant extends Thread {
             i = ((++i)% passengersList.size());
         }
 
-//        goToSleep(4000);
+        goToSleep(3000);
         //once all passengers are waiting at the boarding line
         scanBoardingPasses(zoneNum);
 
@@ -96,6 +96,7 @@ public class FlightAttendant extends Thread {
             pass.yield();
             pass.yield();
             msg(pass.getName() + "'s boarding pass with arrival time " + pass.getArrivalTime() + " scanned");
+            msg(pass.getName()  + "is in seat " + pass.getSeatNum() + " and departs plane");
         }
 
         //clear the line for the next zone group

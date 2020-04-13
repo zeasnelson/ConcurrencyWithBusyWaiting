@@ -43,7 +43,7 @@ public class Passenger extends Thread{
     private volatile boolean isAtBoardingLine;
 
     /**
-     * To save the arrival time to airport.
+     * To save the airport arrival time.
      * Later used to save arrival time to boarding gate
      */
     private volatile long arrivalTime;
@@ -52,18 +52,17 @@ public class Passenger extends Thread{
     public Passenger(String passengerID){
         super(passengerID);
         this.arrivalTime = -1;
-        this.seatNum = -1;
-        this.zoneNum = -1;
-        this.standBy = true;
-        this.waitAtGate = false;
-        this.stop = false;
-        this.goHome = false;
+        this.seatNum     = -1;
+        this.zoneNum     = -1;
+        this.stop        = false;
+        this.goHome      = false;
+        this.standBy     = true;
+        this.waitAtGate  = false;
         this.boardingPassScanned = false;
-        this.isAtBoardingLine = false;
+        this.isAtBoardingLine    = false;
     }
 
     //getters and setters
-
     public boolean isAtBoardingLine() {
         return isAtBoardingLine;
     }
@@ -106,10 +105,11 @@ public class Passenger extends Thread{
         return this.waitAtGate;
     }
 
-
     public void setBoardingPassScanned(boolean flag) {
         this.boardingPassScanned = flag;
     }
+
+
     /**
      * Put the thread to sleep
      * @param milli time to sleep in millis
@@ -118,7 +118,10 @@ public class Passenger extends Thread{
         try {
             sleep(milli);
         } catch (InterruptedException e) {
-            msg("sleep interrupted. Ready for landing");
+            if( boardingPassScanned )
+                msg("sleep interrupted. Ready for landing");
+            else
+                System.out.println("Passenger lost");
         }
     }
 
@@ -134,13 +137,26 @@ public class Passenger extends Thread{
         this.stop = stop;
     }
 
-    public int compareSeatNumber(Passenger otherPass) {
-        return seatNum - otherPass.getSeatNum();
+    /**
+     *  Compare the seat number of this passenger with the seat number of another passenger
+     * @param OtherPassenger an object of type Passenger
+     * @return < 0 if this passengers seat is less that the other, 0 if equal,
+     * > 0 if the seat number of this passenger is grater than the other's passenger seat number
+     */
+    public int compareSeatNumber(Passenger OtherPassenger) {
+        return seatNum - OtherPassenger.getSeatNum();
     }
 
+    /**
+     *  Compare the arrival time of this passenger with the arrival time of another passenger
+     * @param OtherPassenger an object of type Passenger
+     * @return < 0 if this passengers arrival time is less that the other, 0 if equal,
+     * > 0 if the arrival time of this passenger is grater than the other's passenger arrival time
+     */
     public int compareArrivalTime(Passenger OtherPassenger){
         return (int) (arrivalTime - OtherPassenger.getArrivalTime());
     }
+
 
     @Override
     public void run() {

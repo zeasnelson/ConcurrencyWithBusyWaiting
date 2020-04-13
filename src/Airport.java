@@ -88,7 +88,7 @@ public class Airport extends Thread{
 
 
     public static void main(String[] args) {
-        int numOfPassengers = 18;
+        int numOfPassengers = 10;
         (new Airport(numOfPassengers)).start();
 
     }
