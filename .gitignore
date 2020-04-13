@@ -1,3 +1,5 @@
 /.idea
 /out
 Airport.iml
+/lib
+src/*Test.java
