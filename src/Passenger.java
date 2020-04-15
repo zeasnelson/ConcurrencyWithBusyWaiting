@@ -48,9 +48,15 @@ public class Passenger extends Thread{
      */
     private volatile long arrivalTime;
 
+    /**
+     * TO save the start time for the thread
+     */
+    private volatile long startTime;
+
 
     public Passenger(String passengerID){
         super(passengerID);
+        this.startTime   = -1;
         this.arrivalTime = -1;
         this.seatNum     = -1;
         this.zoneNum     = -1;
@@ -63,6 +69,14 @@ public class Passenger extends Thread{
     }
 
     //getters and setters
+    public void setStandBy(boolean standBy){
+        this.standBy = standBy;
+    }
+
+    public boolean getStandBy(){
+        return this.standBy;
+    }
+
     public boolean isAtBoardingLine() {
         return isAtBoardingLine;
     }
@@ -91,9 +105,7 @@ public class Passenger extends Thread{
         return arrivalTime;
     }
 
-    public void setStandBy(boolean standBy){
-        this.standBy = standBy;
-    }
+
 
     public int getSeatNum() {
         return seatNum;
@@ -127,7 +139,7 @@ public class Passenger extends Thread{
 
 
     public void msg(String msg){
-        System.out.println("["+Clock.getTime()+"] " + getName() + ": " + msg);
+        System.out.println("["+getTime()+"] " + getName() + ": " + msg);
     }
 
     /**
@@ -158,8 +170,14 @@ public class Passenger extends Thread{
     }
 
 
+    public long getTime(){
+        return System.currentTimeMillis() - startTime;
+    }
+
     @Override
     public void run() {
+
+        this.startTime = System.currentTimeMillis();
 
         //get a random number between 0 and 1 sec for arrival time
         Random rand = new Random();
@@ -167,7 +185,7 @@ public class Passenger extends Thread{
         goToSleep(randomTime);
 
         //passenger arrives, save the arrival time
-        this.arrivalTime = Clock.getTime();
+        this.arrivalTime = getTime();
         msg("arrived to the airport - waiting in stand by area");
 
         //BW until a spot open in one of the clerk lines. standBy updated by clerk thread
@@ -195,14 +213,14 @@ public class Passenger extends Thread{
         //continues only if this passenger did not miss the flight
         if( !stop ) {
 
-            msg("Walking to the boarding door. Seat: " + seatNum + " Zone: " + zoneNum);
+            msg("Walking to the boarding door. ZoneNum: " + zoneNum);
             //will take between 1 and 2 seconds to make to the line
             randomTime = rand.nextInt(1000)+1000;
             goToSleep(randomTime);
 
             msg("Waiting at boarding line to scan boarding pass.");
             //set arrival time to the boarding line
-            arrivalTime = Clock.getTime();
+            arrivalTime = getTime();
 
 
             //BW until boarding pass is scanned by flight attendant

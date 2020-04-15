@@ -26,7 +26,7 @@ public class PassengersList extends ArrayList<Passenger> {
 
         for( int i = 0; i < size(); i++) {
             Passenger passenger = get(i);
-            if (passenger.getArrivalTime() != -1){
+            if (passenger.getArrivalTime() != -1 ){
                 if (passenger.getArrivalTime() < earliestArrivalTime) {
                     earliestArrivalTime = passenger.getArrivalTime();
                     passengerIndex = i;

@@ -12,26 +12,54 @@ public class FlightAttendant extends Thread {
     private PassengersList passengersList;
 
     /**
-     * The length of the line to board the plane
+     * To store the start of this thread
      */
-    private int lineLength;
+    private long startTime;
 
+
+    private volatile boolean startBoarding;
+
+    private volatile boolean disembarkPlane;
+
+    private volatile boolean midFlightMeal;
 
     public FlightAttendant(){
         super("FlightAttendant");
-        this.lineLength = 10;
+        this.startBoarding  = false;
+        this.disembarkPlane = false;
+        this.midFlightMeal  = false;
+
+        //each zone can have at most 10 passengers
+        int lineLength = 10;
         this.line = new PassengersList(lineLength);
     }
 
 
+    public void setDisembarkPlane(boolean disembarkPlane) {
+        this.disembarkPlane = disembarkPlane;
+    }
+
     public void msg(String msg){
-        System.out.println("["+Clock.getTime()+"] " + getName() + ": " + msg);
+        System.out.println("["+getTime()+"] " + getName() + ": " + msg);
+    }
+
+    public long getTime(){
+        return System.currentTimeMillis() - this.startTime;
     }
 
 
     public void setPassengersList(PassengersList passengersList){
         this.passengersList = passengersList;
     }
+
+    public void setStartBoarding(boolean startBoarding) {
+        this.startBoarding = startBoarding;
+    }
+
+    public void setMidFlightMeal(boolean flag){
+        this.midFlightMeal = flag;
+    }
+
 
     /**
      * Put this thread to sleep
@@ -54,14 +82,14 @@ public class FlightAttendant extends Thread {
      * @param zoneNum the zone number being called
      */
     public void callZone(int zoneNum){
-        //start the timer for 6 secs
-        //this is the time the FlightAttendant will wait per zone
-        Clock.setTimerStart(6000);
+
+        long timerStart = getTime();
+        long timerLength = 6000;
 
         //BW until all passengers with @zoneNum arrive
         int i = 0;
         Passenger passenger;
-        while( Clock.timerIsRunning() ){
+        while( (getTime()-timerStart) <= timerLength ){
             passenger = passengersList.get(i);
 
             //make sure passenger is at the gate already
@@ -156,10 +184,17 @@ public class FlightAttendant extends Thread {
 
     @Override
     public void run(){
+        this.startTime = System.currentTimeMillis();
+
+        msg("started. Waiting to start calling passengers");
+        //BW until ClockThread signal to start boarding
+        while (!startBoarding);
+
+
         msg("Get ready to board plane");
 
         //get boarding start time, in 30 minutes plane doors will close
-        long boardingStartTime = Clock.getTime();
+        long boardingStartTime = getTime();
 
         msg("Calling all passengers in zone 1");
         callZone(1);
@@ -168,20 +203,24 @@ public class FlightAttendant extends Thread {
         msg("Calling all passengers in zone 3");
         callZone(3);
 
-        long totalTime = Clock.getTime() - boardingStartTime;
+        long totalTime = getTime() - boardingStartTime;
         msg("All groups have boarded plane in " + totalTime + " ms");
         msg("Plane doors are closed");
 
         //check which passenger missed the flight and have them rebook flights
         rebookFlights();
 
-        msg("Welcome to Purrel Airlines. Plane is departing now");
+        msg("Welcome to Purrel Airlines.");
         msg("Plane is departing now");
         msg("This flight will be two hours long.");
 
-        goToSleep(4000);
-        msg("Mid-flight meal. We'll arrive in 1 hour");
-        goToSleep(4000);
+        //BW until mid-flight to serve a meal
+        while (!midFlightMeal);
+        msg("serving mid-flight meal");
+
+        //BW until it is time to disembark plane
+        while (!disembarkPlane);
+
         msg("We'll arrive in 10 minutes. Fasten seat belts");
         goToSleep(1000);
 

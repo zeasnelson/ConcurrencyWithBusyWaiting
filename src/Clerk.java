@@ -1,39 +1,53 @@
-
 import java.util.Random;
 
-public class Clerk extends Thread {
+public class Clerk extends Thread{
 
-    /**
-     * FLag to signal clerk to home after all passengers are helped
-     */
-    private volatile Boolean goHome;
-
-    /**
-     * Custom ArrayList
-     */
-    private volatile PassengersList lineQueue;
-
-    /**
-     * The length of the line for the clerk
-     */
-    private int lineLength;
-
-    /**
-     * To store the number of passengers this clerk will help
-     */
+    private int numberOfPassengers;
+    private int counterNum;
+    private PassengersList lineQueue;
+    private long startTime;
     private int numOfPassengersHelped;
+    private int [] ticketNumbers;
+
+    private volatile PassengersList standByPassengers;
+
+    public Clerk(String threadName, int numberOfPassengers, int counterNum, int [] ticketNumbers){
+        super(threadName);
+        this.numberOfPassengers = 0;
+        this.startTime          = -1;
+        this.numberOfPassengers = numberOfPassengers;
+        this.counterNum         = counterNum;
+        this.lineQueue          = new PassengersList(counterNum);
+        this.ticketNumbers      = ticketNumbers;
+    }
+
+
+    public void setStandByPassengers(PassengersList passengersList){
+        this.standByPassengers = new PassengersList(passengersList);
+    }
+
 
     /**
-     * Constructs a Clerk with its line capacity and name
-     * @param lineLength line capacity for this thread
-     * @param name the name of this thread
+     * Put this thread to sleep
+     * @param milli time in millis for thread to sleep
      */
-    public Clerk(int lineLength, String name){
-        setName(name);
-        this.lineLength = lineLength;
-        this.lineQueue = new PassengersList(lineLength);
-        this.goHome = false;
+    public void goToSleep(long milli){
+        try {
+            sleep(milli);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
+
+    public void msg(String msg){
+        System.out.println("["+getTime()+"] " + getName() + ": " + msg);
+    }
+
+
+    public long getTime(){
+        return System.currentTimeMillis() - this.startTime;
+    }
+
 
     /**
      * Generates a random unique seat number for a passenger
@@ -46,43 +60,12 @@ public class Clerk extends Thread {
 
         while (!foundTicketNum){
             seatNum = rand.nextInt(30)+1;
-            if( Counter.ticketNumbers[seatNum] == 0 ){
+            if( ticketNumbers[seatNum] == 0 ){
                 foundTicketNum = true;
-                Counter.ticketNumbers[seatNum]++;
+                ticketNumbers[seatNum]++;
             }
         }
         return seatNum;
-    }
-
-    /**
-     * Checks if this clerk has a spot available in the line for another passenger
-     * @return true if a spot is available, false otherwise
-     */
-    public boolean hasSpotAvailable(){
-        return this.lineQueue.size() < lineLength;
-    }
-
-    /**
-     * Adds a passenger to the this clerk's line
-     * @param passenger the passenger to be added
-     * @return true if there was a spot available, false otherwise
-     */
-    public Boolean addPassToLine(Passenger passenger){
-        if( hasSpotAvailable() ) {
-            //add passenger to the end of the queue
-            this.lineQueue.add(passenger);
-            return true;
-        }
-        else
-            return false;
-    }
-
-    /**
-     * Check if this clerk still has passengers in the line
-     * @return true if there still are passengers, false otherwise
-     */
-    public Boolean hasPassengers(){
-        return lineQueue.size() > 0;
     }
 
     /**
@@ -105,34 +88,33 @@ public class Clerk extends Thread {
             return -1;
     }
 
-    /**
-     * Set goHome variable to true
-     */
-    public void setCanGoHome(boolean goHome){
-        this.goHome = goHome;
-    }
+
 
     /**
-     * Put this thread to sleep
-     * @param milli time in millis for thread to sleep
+     * Checks if this clerk has a spot available in the line for another passenger
+     * @return true if a spot is available, false otherwise
      */
-    public void goToSleep(long milli){
-        try {
-            sleep(milli);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public boolean hasSpotAvailable(){
+        return this.lineQueue.size() < counterNum;
+    }
+
+
+    /**
+     * Add a passenger from stand by to one of the clerk lines
+     * @param passenger the passenger to be added to the clerk line
+     * @return true if passenger was added, false otherwise
+     */
+    public boolean addPassengerToLine(Passenger passenger){
+        if( passenger == null )
+            return false;
+
+        if( hasSpotAvailable() ){
+            return lineQueue.add(passenger);
         }
+
+        return false;
     }
 
-
-    public int getLineLength(){
-        return lineQueue.size();
-    }
-
-
-    public void msg(String msg){
-        System.out.println("["+Clock.getTime()+"] " + getName() + ": " + msg);
-    }
 
     /**
      * Calls the passenger with the earliest time, generates a random seat number and zone number
@@ -140,49 +122,66 @@ public class Clerk extends Thread {
      */
     public void helpPassengers(){
         if( !lineQueue.isEmpty() ){
-
             //help next passenger in line
             Passenger passenger = lineQueue.getNextPassenger();
             if( passenger == null )
                 return;
-
-            //passenger moves to clerk line
-            passenger.setStandBy(false);
 
             //get seat number and zone number for passenger
             int seatNum = getSeatNum();
             int zoneNum = getZone(seatNum);
 
             //Clerk takes 1 second to generate a ticket and zone number
-            goToSleep(1000);
+//            goToSleep(1000);
 
             msg(passenger.getName() + " assigned seatNum: " + seatNum + " zoneNum: " + zoneNum);
 
             //assign the seat number to the passenger
             passenger.setSeatNum(seatNum);
             passenger.setZoneNum(zoneNum);
-            //passenger can go to security line
 
             //keep track of the number of passengers this clerk helped
             this.numOfPassengersHelped++;
-
         }
     }
-
 
 
     @Override
-    public void run(){
+    public void run() {
+        this.startTime = System.currentTimeMillis();
         msg("arrived to the counter. Getting ready...");
-        //clerks take 2 seconds to get ready to work, breakfast, etc...
+        //clerk takes 2 seconds to get ready to work, breakfast, etc...
         goToSleep(2000);
         msg("ready to help passengers");
 
-        //help passengers until all of them have checked in
-        //flag goHome is changed by Counter thread class
-        while (!goHome){
+        boolean isInLine    = true;
+        Passenger passenger = null;
+        //loop until all passengers are given a boarding pass
+        while( !standByPassengers.isEmpty() || !lineQueue.isEmpty() ){
+
+            //loop until all passengers in stand-b area lining in the clerk lines
+            //if passenger was added to clerk, remove passenger from stand-by
+            if( isInLine || passenger == null ){
+                //get the next passenger with the earliest arrival time to ensure FCFS
+                passenger = standByPassengers.getNextPassenger();
+            }
+
+            if( passenger != null && passenger.getStandBy() ){
+                //passenger moves to clerk line
+                passenger.setStandBy(false);
+                //Add passenger to line queue
+                isInLine = addPassengerToLine(passenger);
+                //clerk takes 1 second to help one customer
+                goToSleep(1000);
+            }
+            else
+                isInLine = true;
+
+            //call passengers from the lineQueue
             helpPassengers();
         }
+
         msg("is done - going home!. Helped " + this.numOfPassengersHelped + " passengers");
     }
+
 }
