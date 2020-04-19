@@ -1,10 +1,19 @@
 public class Clock extends Thread {
 
+    //To store the start time of this thread
     private long startTime;
+
+    //The number of passengers in the simulation
     private int numOfPassengers;
+
+    //Store a reference to the flight attendant thread
     private FlightAttendant flightAttendant;
 
-
+    /**
+     * Construct a Clock thread
+     * @param numberOfPassengers The number of passengers in the simulation
+     * @param flightAttendant Reference to the flight attendant thread
+     */
     public Clock(int numberOfPassengers, FlightAttendant flightAttendant){
         super("Clock");
         this.numOfPassengers = numberOfPassengers;
@@ -34,6 +43,10 @@ public class Clock extends Thread {
         return System.currentTimeMillis() - this.startTime;
     }
 
+    /**
+     * Put this thread to sleep for a specified amount of time
+     * @param millis The time in milliseconds for this thread to sleep
+     */
     public void gotToSleep(long millis){
         try {
             sleep(millis);

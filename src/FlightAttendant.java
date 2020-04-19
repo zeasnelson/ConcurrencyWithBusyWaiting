@@ -1,26 +1,22 @@
 
 public class FlightAttendant extends Thread {
 
-    /**
-     * An ArrayList for passengers to wait when called by the attendant
-     */
+    //An ArrayList for passengers to wait when called by the attendant
     private PassengersList line;
 
-    /**
-     * To store a reference to all the passengers waiting to fly
-     */
+    //To store a reference to all the passengers waiting to fly
     private PassengersList passengersList;
 
-    /**
-     * To store the start of this thread
-     */
+    //To store the start of this thread
     private long startTime;
 
-
+    //Flag to BW until Clock signal to start the boarding process
     private volatile boolean startBoarding;
 
+    //Flag to BW until Clock signal to disembark plane
     private volatile boolean disembarkPlane;
 
+    //Flag to BW until clock signals mid flight and serve a meal
     private volatile boolean midFlightMeal;
 
     public FlightAttendant(){
@@ -35,6 +31,7 @@ public class FlightAttendant extends Thread {
     }
 
 
+    //setters and getters
     public void setDisembarkPlane(boolean disembarkPlane) {
         this.disembarkPlane = disembarkPlane;
     }
@@ -46,7 +43,6 @@ public class FlightAttendant extends Thread {
     public long getTime(){
         return System.currentTimeMillis() - this.startTime;
     }
-
 
     public void setPassengersList(PassengersList passengersList){
         this.passengersList = passengersList;
@@ -107,13 +103,19 @@ public class FlightAttendant extends Thread {
             i = ((++i)% passengersList.size());
         }
 
+        //wait for passengers to arrive to the waiting line
         goToSleep(3000);
+
         //once all passengers are waiting at the boarding line
         scanBoardingPasses(zoneNum);
 
     }
 
     public void scanBoardingPasses(int zoneNum){
+        if( line.isEmpty() ){
+            msg("No passengers in zone " + zoneNum);
+            return;
+        }
         msg("scanning boarding passes for " + line.size() + " passengers in zone " + zoneNum);
         //sort according to arrival time, ensure FCFS
         line.sortByArrivalTime();

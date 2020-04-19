@@ -2,55 +2,35 @@ import java.util.Random;
 
 public class Passenger extends Thread{
 
-    /**
-     * Store the seat number
-     */
+    // Store the seat number
     private volatile int seatNum;
 
-    /**
-     * Store the zone number
-     */
+    // Store the zone number
     private volatile int zoneNum;
 
-    /**
-     * Flag to BW passenger in stand by area.
-     */
+    // Flag to BW passenger in stand by area
     private volatile boolean standBy;
 
-    /**
-     * Flag to BW passenger at gate
-     */
+    // Flag to BW passenger at gate
     private volatile boolean waitAtGate;
 
-    /**
-     * Flag to BW passenger until flight attendant scans boarding pass
-     */
+    // Flag to BW passenger until flight attendant scans boarding pass
     private volatile boolean boardingPassScanned;
 
-    /**
-     * Flag to send passenger home when flight is missed
-     */
+    // Flag to send passenger home when flight is missed
     private volatile boolean stop;
 
-    /**
-     * Flag to BW passenger until instructed by flight attendant to leave plane
-     */
+    // Flag to BW passenger until instructed by flight attendant to leave plane
     private volatile boolean goHome;
 
-    /**
-     * Flag to know when a passenger is waiting at the boarding line
-     */
+    // Flag to know when a passenger is waiting at the boarding line
     private volatile boolean isAtBoardingLine;
 
-    /**
-     * To save the airport arrival time.
-     * Later used to save arrival time to boarding gate
-     */
+    // To save the airport arrival time.
+    // Later used to save arrival time to boarding gate
     private volatile long arrivalTime;
 
-    /**
-     * TO save the start time for the thread
-     */
+    // To save the start time for the thread
     private volatile long startTime;
 
 
@@ -104,8 +84,6 @@ public class Passenger extends Thread{
     public long getArrivalTime() {
         return arrivalTime;
     }
-
-
 
     public int getSeatNum() {
         return seatNum;
@@ -194,6 +172,7 @@ public class Passenger extends Thread{
 
         //BW for the clerk to assign a ticket and zone number
         while ( seatNum == -1 || zoneNum == -1 );
+        arrivalTime = -1;
 
         //passenger now rushes to the security line
         msg("is going through security line ");

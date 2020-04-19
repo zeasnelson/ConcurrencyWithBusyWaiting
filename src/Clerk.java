@@ -2,15 +2,34 @@ import java.util.Random;
 
 public class Clerk extends Thread{
 
+    //Store the number of passengers in the simulation
     private int numberOfPassengers;
+
+    //The line length at the counter
     private int counterNum;
+
+    //An ArrayList to store all passengers waiting in line
     private PassengersList lineQueue;
+
+    //The start time for this thread
     private long startTime;
+
+    //To store the number of passengers that this clerk helps
     private int numOfPassengersHelped;
+
+    //To store a reference to the seat numbers already generated, no repeated seat numbers
     private int [] ticketNumbers;
 
+    //To store a reference to all the passenger threads in the simulation
     private volatile PassengersList standByPassengers;
 
+    /**
+     * Constructs a Clerk thread
+     * @param threadName The name of this thread
+     * @param numberOfPassengers The number of passengers in the simulation
+     * @param counterNum The line length for this clerk
+     * @param ticketNumbers reference to the ticket numbers already generated
+     */
     public Clerk(String threadName, int numberOfPassengers, int counterNum, int [] ticketNumbers){
         super(threadName);
         this.numberOfPassengers = 0;
@@ -21,7 +40,10 @@ public class Clerk extends Thread{
         this.ticketNumbers      = ticketNumbers;
     }
 
-
+    /**
+     * Store a reference to all passengers in the simulation
+     * @param passengersList An PassengersList
+     */
     public void setStandByPassengers(PassengersList passengersList){
         this.standByPassengers = new PassengersList(passengersList);
     }
@@ -39,11 +61,19 @@ public class Clerk extends Thread{
         }
     }
 
+    /**
+     * Print a msg preceded by the thread name and the time this msg is being printed
+     * @param msg The msg to be printed
+     */
     public void msg(String msg){
         System.out.println("["+getTime()+"] " + getName() + ": " + msg);
     }
 
 
+    /**
+     * Compute the total elapsed time based on the start time
+     * @return total elapsed time
+     */
     public long getTime(){
         return System.currentTimeMillis() - this.startTime;
     }
@@ -132,7 +162,7 @@ public class Clerk extends Thread{
             int zoneNum = getZone(seatNum);
 
             //Clerk takes 1 second to generate a ticket and zone number
-//            goToSleep(1000);
+            goToSleep(1000);
 
             msg(passenger.getName() + " assigned seatNum: " + seatNum + " zoneNum: " + zoneNum);
 
