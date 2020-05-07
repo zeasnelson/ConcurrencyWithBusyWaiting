@@ -1,6 +1,6 @@
 # ConcurrencyWithBusyWaiting
 
-Flying to Wonderland
+## Flying to Wonderland
 The project must be done individually - no exceptions. The objective of this project is to
 familiarize you with the creation and execution of threads using the Thread’s class methods.
 You should use, when necessary, the following methods to synchronize all threads: run(),
